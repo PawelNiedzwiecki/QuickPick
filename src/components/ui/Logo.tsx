@@ -1,74 +1,53 @@
 /**
  * Logo Component
- * QuickPick branding with tagline
+ * QuickPick branding with NativeWind
  */
 
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Text } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS, FONT_SIZES, SPACING } from '../../utils/constants';
+import React from "react";
+import { View, Text } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { cn } from "@/lib/utils";
 
 interface LogoProps {
   showTagline?: boolean;
-  size?: 'large' | 'medium' | 'small';
-  color?: string;
+  size?: "lg" | "md" | "sm";
+  variant?: "light" | "dark";
+  className?: string;
 }
+
+const sizeConfig = {
+  lg: { icon: 64, title: "text-5xl", tagline: "text-base" },
+  md: { icon: 48, title: "text-3xl", tagline: "text-sm" },
+  sm: { icon: 32, title: "text-2xl", tagline: "text-xs" },
+};
 
 export function Logo({
   showTagline = true,
-  size = 'large',
-  color = COLORS.secondary,
+  size = "lg",
+  variant = "light",
+  className,
 }: LogoProps) {
-  const iconSize = size === 'large' ? 64 : size === 'medium' ? 48 : 32;
-  const titleSize = size === 'large' ? FONT_SIZES.xxxl : size === 'medium' ? FONT_SIZES.xxl : FONT_SIZES.xl;
-  const taglineSize = size === 'large' ? FONT_SIZES.md : FONT_SIZES.sm;
+  const config = sizeConfig[size];
+  const textColor = variant === "light" ? "text-white" : "text-foreground";
+  const iconColor = variant === "light" ? "#FFFFFF" : "#22C55E";
 
   return (
-    <View style={styles.container}>
-      <View style={styles.logoRow}>
+    <View className={cn("items-center", className)}>
+      <View className="flex-row items-center gap-2">
         <MaterialCommunityIcons
           name="movie-open"
-          size={iconSize}
-          color={color}
+          size={config.icon}
+          color={iconColor}
         />
-        <Text
-          style={[
-            styles.title,
-            { fontSize: titleSize, color },
-          ]}
-        >
+        <Text className={cn("font-bold", config.title, textColor)}>
           QuickPick
         </Text>
       </View>
       {showTagline && (
-        <Text
-          style={[
-            styles.tagline,
-            { fontSize: taglineSize, color },
-          ]}
-        >
+        <Text className={cn("mt-2 opacity-90", config.tagline, textColor)}>
           What to watch. Decided in 60 seconds.
         </Text>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-  },
-  logoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  title: {
-    fontWeight: 'bold',
-  },
-  tagline: {
-    marginTop: SPACING.sm,
-    opacity: 0.9,
-  },
-});

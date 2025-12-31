@@ -3,89 +3,67 @@
  * Main landing screen with options to create or join a session
  */
 
-import React from 'react';
-import { StyleSheet, View, SafeAreaView } from 'react-native';
-import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Logo, PrimaryButton } from '../components/ui';
-import { COLORS, SPACING } from '../utils/constants';
+import React from "react";
+import { View, Text } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { LinearGradient } from "expo-linear-gradient";
+import { Logo, Button } from "@/components/ui";
 
 export function HomeScreen() {
   const router = useRouter();
 
   const handleStartNewPick = () => {
-    router.push('/create');
+    router.push("/create");
   };
 
   const handleJoinPick = () => {
-    router.push('/join');
+    router.push("/join");
   };
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1">
       <LinearGradient
-        colors={[COLORS.gradientStart, COLORS.gradientEnd]}
-        style={styles.gradient}
+        colors={["#22C55E", "#16A34A"]}
+        className="absolute inset-0"
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       />
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.content}>
+      <SafeAreaView className="flex-1">
+        <View className="flex-1 px-6 pb-8">
           {/* Logo Section */}
-          <View style={styles.logoSection}>
-            <Logo size="large" color={COLORS.secondary} />
+          <View className="flex-1 items-center justify-center">
+            <Logo size="lg" variant="light" />
           </View>
 
           {/* Buttons Section */}
-          <View style={styles.buttonSection}>
-            <PrimaryButton
-              title="Start New Pick"
+          <View className="items-center gap-4 pb-12">
+            <Button
+              variant="secondary"
+              size="xl"
               onPress={handleStartNewPick}
-              variant="filled"
-              size="large"
-            />
-            <PrimaryButton
-              title="Join Pick"
-              onPress={handleJoinPick}
+              className="w-72"
+            >
+              <Text className="text-lg font-semibold text-primary">
+                Start New Pick
+              </Text>
+            </Button>
+            <Button
               variant="outline"
-              size="large"
-            />
+              size="xl"
+              onPress={handleJoinPick}
+              className="w-72 border-white"
+            >
+              <Text className="text-lg font-semibold text-white">
+                Join Pick
+              </Text>
+            </Button>
           </View>
 
-          {/* Footer */}
-          <View style={styles.footer} />
+          {/* Footer spacer */}
+          <View className="h-8" />
         </View>
       </SafeAreaView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  gradient: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.xl,
-  },
-  logoSection: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonSection: {
-    gap: SPACING.md,
-    alignItems: 'center',
-    paddingBottom: SPACING.xxl,
-  },
-  footer: {
-    height: SPACING.xl,
-  },
-});

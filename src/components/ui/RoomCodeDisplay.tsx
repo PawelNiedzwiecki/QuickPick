@@ -1,99 +1,52 @@
 /**
  * RoomCodeDisplay Component
- * Large display for the 4-digit room code
+ * Large display for 4-digit room code with NativeWind
  */
 
-import React from 'react';
-import { StyleSheet, View, Pressable } from 'react-native';
-import { Text } from 'react-native-paper';
-import * as Clipboard from 'expo-clipboard';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { COLORS, SPACING, BORDER_RADIUS, FONT_SIZES } from '../../utils/constants';
+import React from "react";
+import { View, Text, Pressable } from "react-native";
+import * as Clipboard from "expo-clipboard";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { cn } from "@/lib/utils";
 
 interface RoomCodeDisplayProps {
   code: string;
   onCopy?: () => void;
+  className?: string;
 }
 
-export function RoomCodeDisplay({ code, onCopy }: RoomCodeDisplayProps) {
+export function RoomCodeDisplay({
+  code,
+  onCopy,
+  className,
+}: RoomCodeDisplayProps) {
   const handleCopy = async () => {
     await Clipboard.setStringAsync(code);
     onCopy?.();
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.label}>Room Code</Text>
-      <View style={styles.codeContainer}>
-        {code.split('').map((char, index) => (
-          <View key={index} style={styles.charBox}>
-            <Text style={styles.char}>{char}</Text>
+    <View className={cn("items-center", className)}>
+      <Text className="mb-2 text-sm uppercase tracking-wider text-muted-foreground">
+        Room Code
+      </Text>
+      <View className="flex-row gap-2">
+        {code.split("").map((char, index) => (
+          <View
+            key={index}
+            className="h-20 w-16 items-center justify-center rounded-lg border-2 border-primary bg-white"
+          >
+            <Text className="text-4xl font-bold text-primary">{char}</Text>
           </View>
         ))}
       </View>
       <Pressable
-        style={({ pressed }) => [
-          styles.copyButton,
-          pressed && styles.copyButtonPressed,
-        ]}
         onPress={handleCopy}
+        className="mt-4 flex-row items-center gap-1 rounded-full bg-secondary px-4 py-2 active:opacity-70"
       >
-        <MaterialCommunityIcons
-          name="content-copy"
-          size={20}
-          color={COLORS.primary}
-        />
-        <Text style={styles.copyText}>Tap to copy</Text>
+        <MaterialCommunityIcons name="content-copy" size={18} color="#22C55E" />
+        <Text className="text-sm text-primary">Tap to copy</Text>
       </Pressable>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-  },
-  label: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.sm,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  codeContainer: {
-    flexDirection: 'row',
-    gap: SPACING.sm,
-  },
-  charBox: {
-    width: 64,
-    height: 80,
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: COLORS.primary,
-  },
-  char: {
-    fontSize: FONT_SIZES.xxxl,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-  },
-  copyButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.xs,
-    marginTop: SPACING.md,
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.round,
-  },
-  copyButtonPressed: {
-    opacity: 0.7,
-  },
-  copyText: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.primary,
-  },
-});
