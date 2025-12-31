@@ -1,89 +1,79 @@
 /**
  * ParticipantList Component
- * Displays list of participants in a session
+ * Displays participants in a session using NativeWind
  */
 
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Text, Avatar } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Participant } from '../../types';
-import { COLORS, SPACING, BORDER_RADIUS, FONT_SIZES } from '../../utils/constants';
+import React from "react";
+import { View, Text } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Avatar } from "./Avatar";
+import { Badge } from "./Badge";
+import { Participant } from "@/types";
+import { cn } from "@/lib/utils";
 
 interface ParticipantListProps {
   participants: Participant[];
   currentUserId?: string;
+  className?: string;
 }
+
+const avatarColors = [
+  "bg-primary",
+  "bg-accent",
+  "bg-blue-500",
+  "bg-purple-500",
+  "bg-pink-500",
+  "bg-teal-500",
+  "bg-orange-500",
+  "bg-indigo-500",
+];
 
 export function ParticipantList({
   participants,
   currentUserId,
+  className,
 }: ParticipantListProps) {
-  const getInitials = (name: string): string => {
-    return name
-      .split(' ')
-      .map((part) => part[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const getAvatarColor = (index: number): string => {
-    const colors = [
-      COLORS.primary,
-      COLORS.accent,
-      '#3B82F6',
-      '#8B5CF6',
-      '#EC4899',
-      '#14B8A6',
-      '#F97316',
-      '#6366F1',
-    ];
-    return colors[index % colors.length];
-  };
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>
+    <View className={cn("w-full", className)}>
+      <Text className="mb-3 text-sm uppercase tracking-wider text-muted-foreground">
         Participants ({participants.length})
       </Text>
-      <View style={styles.list}>
+      <View className="gap-3">
         {participants.map((participant, index) => (
-          <View key={participant.id} style={styles.participantRow}>
-            <Avatar.Text
-              size={44}
-              label={getInitials(participant.name)}
-              style={[
-                styles.avatar,
-                { backgroundColor: getAvatarColor(index) },
-              ]}
-              labelStyle={styles.avatarLabel}
+          <View
+            key={participant.id}
+            className="flex-row items-center gap-3 rounded-lg bg-secondary p-3"
+          >
+            <Avatar
+              fallback={participant.name}
+              size="md"
+              color={avatarColors[index % avatarColors.length]}
             />
-            <View style={styles.info}>
-              <View style={styles.nameRow}>
-                <Text style={styles.name}>
+            <View className="flex-1">
+              <View className="flex-row items-center gap-2">
+                <Text className="text-base font-semibold text-foreground">
                   {participant.name}
-                  {participant.id === currentUserId && ' (You)'}
+                  {participant.id === currentUserId && " (You)"}
                 </Text>
                 {participant.isHost && (
-                  <View style={styles.hostBadge}>
+                  <Badge variant="warning" className="flex-row items-center gap-1">
                     <MaterialCommunityIcons
                       name="crown"
-                      size={14}
-                      color={COLORS.accent}
+                      size={12}
+                      color="#F59E0B"
                     />
-                    <Text style={styles.hostText}>Host</Text>
-                  </View>
+                    <Text className="text-xs font-medium text-accent">Host</Text>
+                  </Badge>
                 )}
               </View>
               {participant.hasSubmittedPreferences && (
-                <View style={styles.readyBadge}>
+                <View className="mt-1 flex-row items-center gap-1">
                   <MaterialCommunityIcons
                     name="check-circle"
                     size={14}
-                    color={COLORS.primary}
+                    color="#22C55E"
                   />
-                  <Text style={styles.readyText}>Ready</Text>
+                  <Text className="text-xs text-primary">Ready</Text>
                 </View>
               )}
             </View>
@@ -93,71 +83,3 @@ export function ParticipantList({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-  },
-  title: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.md,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  list: {
-    gap: SPACING.md,
-  },
-  participantRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: COLORS.surface,
-    padding: SPACING.md,
-    borderRadius: BORDER_RADIUS.md,
-    gap: SPACING.md,
-  },
-  avatar: {
-    backgroundColor: COLORS.primary,
-  },
-  avatarLabel: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-  },
-  info: {
-    flex: 1,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: SPACING.sm,
-  },
-  name: {
-    fontSize: FONT_SIZES.md,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  hostBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    backgroundColor: `${COLORS.accent}20`,
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: 2,
-    borderRadius: BORDER_RADIUS.round,
-  },
-  hostText: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.accent,
-    fontWeight: '600',
-  },
-  readyBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    marginTop: 4,
-  },
-  readyText: {
-    fontSize: FONT_SIZES.xs,
-    color: COLORS.primary,
-  },
-});

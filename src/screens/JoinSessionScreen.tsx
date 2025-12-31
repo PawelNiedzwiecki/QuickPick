@@ -3,299 +3,174 @@
  * Screen for joining an existing session with a room code
  */
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-  StyleSheet,
   View,
-  SafeAreaView,
+  Text,
+  Pressable,
+  TextInput,
   KeyboardAvoidingView,
   Platform,
   Alert,
-} from 'react-native';
-import { Text, TextInput } from 'react-native-paper';
-import { useRouter } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { PrimaryButton, CodeInput, LoadingOverlay } from '../components/ui';
-import { useSessionStore } from '../store/sessionStore';
-import { isValidRoomCode } from '../utils/helpers';
-import { COLORS, SPACING, FONT_SIZES, ERROR_MESSAGES } from '../utils/constants';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Button, CodeInput, LoadingOverlay } from "@/components/ui";
+import { useSessionStore } from "@/store/sessionStore";
+import { isValidRoomCode } from "@/utils/helpers";
+import { ERROR_MESSAGES } from "@/utils/constants";
+import { cn } from "@/lib/utils";
 
-type JoinStep = 'code' | 'name';
+type JoinStep = "code" | "name";
 
 export function JoinSessionScreen() {
   const router = useRouter();
-  const [step, setStep] = useState<JoinStep>('code');
-  const [roomCode, setRoomCode] = useState('');
-  const [participantName, setParticipantName] = useState('');
+  const [step, setStep] = useState<JoinStep>("code");
+  const [roomCode, setRoomCode] = useState("");
+  const [participantName, setParticipantName] = useState("");
   const [isJoining, setIsJoining] = useState(false);
 
-  const { joinSession, loadingState, error } = useSessionStore();
+  const { joinSession } = useSessionStore();
 
-  // Handle code input change
   const handleCodeChange = (code: string) => {
-    // Convert to uppercase and filter valid characters
-    const filtered = code.toUpperCase().replace(/[^23456789ABCDEFGHJKMNPQRSTUVWXYZ]/g, '');
+    const filtered = code.toUpperCase().replace(/[^23456789ABCDEFGHJKMNPQRSTUVWXYZ]/g, "");
     setRoomCode(filtered);
 
-    // Auto-advance when 4 characters entered
     if (filtered.length === 4) {
-      setStep('name');
+      setStep("name");
     }
   };
 
-  // Handle joining the session
   const handleJoin = async () => {
     if (!participantName.trim()) {
-      Alert.alert('Name Required', 'Please enter your name to join.');
+      Alert.alert("Name Required", "Please enter your name to join.");
       return;
     }
 
     if (!isValidRoomCode(roomCode)) {
-      Alert.alert('Invalid Code', ERROR_MESSAGES.INVALID_ROOM_CODE);
+      Alert.alert("Invalid Code", ERROR_MESSAGES.INVALID_ROOM_CODE);
       return;
     }
 
     setIsJoining(true);
     try {
       await joinSession(roomCode, participantName.trim());
-      // Navigate to waiting/preferences screen
-      router.replace('/waiting');
+      router.replace("/waiting");
     } catch (err) {
       const message = err instanceof Error ? err.message : ERROR_MESSAGES.UNKNOWN_ERROR;
-      Alert.alert('Could Not Join', message);
+      Alert.alert("Could Not Join", message);
     } finally {
       setIsJoining(false);
     }
   };
 
-  // Handle going back
   const handleBack = () => {
-    if (step === 'name') {
-      setStep('code');
-      setRoomCode('');
+    if (step === "name") {
+      setStep("code");
+      setRoomCode("");
     } else {
       router.back();
     }
   };
 
   return (
-    <View style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
+    <View className="flex-1 bg-background">
+      <SafeAreaView className="flex-1">
         <KeyboardAvoidingView
-          style={styles.keyboardView}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          className="flex-1"
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
           {/* Header */}
-          <View style={styles.header}>
-            <MaterialCommunityIcons
-              name="arrow-left"
-              size={28}
-              color={COLORS.text}
-              onPress={handleBack}
-            />
-            <Text style={styles.headerTitle}>Join Pick</Text>
-            <View style={styles.headerSpacer} />
+          <View className="flex-row items-center justify-between px-4 py-4">
+            <Pressable onPress={handleBack}>
+              <MaterialCommunityIcons name="arrow-left" size={28} color="#1E293B" />
+            </Pressable>
+            <Text className="text-lg font-semibold text-foreground">Join Pick</Text>
+            <View className="w-7" />
           </View>
 
-          <View style={styles.content}>
-            {step === 'code' ? (
+          <View className="flex-1 px-6">
+            {step === "code" ? (
               // Step 1: Enter room code
-              <View style={styles.stepContainer}>
-                <Text style={styles.stepTitle}>Enter Room Code</Text>
-                <Text style={styles.stepDescription}>
+              <View className="flex-1 items-center pt-12">
+                <Text className="mb-2 text-center text-3xl font-bold text-foreground">
+                  Enter Room Code
+                </Text>
+                <Text className="mb-8 text-center text-base text-muted-foreground">
                   Ask your friend for the 4-character code
                 </Text>
 
-                <View style={styles.codeInputWrapper}>
-                  <CodeInput
-                    value={roomCode}
-                    onChange={handleCodeChange}
-                    maxLength={4}
-                  />
-                </View>
+                <CodeInput value={roomCode} onChange={handleCodeChange} maxLength={4} />
 
-                <PrimaryButton
-                  title="Continue"
-                  onPress={() => setStep('name')}
+                <Button
+                  variant="default"
+                  size="xl"
+                  onPress={() => setStep("name")}
                   disabled={roomCode.length !== 4}
-                  variant="filled"
-                  size="large"
-                  style={[
-                    styles.continueButton,
-                    roomCode.length === 4 && styles.continueButtonActive,
-                  ]}
-                  textStyle={{ color: COLORS.secondary }}
-                />
+                  className={cn("mt-8 w-72", roomCode.length !== 4 && "bg-muted-foreground")}
+                >
+                  Continue
+                </Button>
               </View>
             ) : (
               // Step 2: Enter name
-              <View style={styles.stepContainer}>
-                <View style={styles.codePreview}>
-                  <Text style={styles.codePreviewLabel}>Joining room</Text>
-                  <Text style={styles.codePreviewCode}>
-                    {roomCode.split('').join(' ')}
+              <View className="flex-1 items-center pt-12">
+                {/* Code preview */}
+                <View className="mb-8 items-center rounded-lg bg-secondary p-4">
+                  <Text className="mb-1 text-sm text-muted-foreground">Joining room</Text>
+                  <Text className="text-xl font-bold tracking-widest text-primary">
+                    {roomCode.split("").join(" ")}
                   </Text>
                 </View>
 
-                <Text style={styles.stepTitle}>What's your name?</Text>
+                <Text className="mb-6 text-center text-3xl font-bold text-foreground">
+                  What's your name?
+                </Text>
 
                 <TextInput
-                  style={styles.nameInput}
+                  className="mb-8 h-14 w-full max-w-xs rounded-lg border-2 border-input bg-secondary px-4 text-lg text-foreground focus:border-primary"
                   value={participantName}
                   onChangeText={setParticipantName}
                   placeholder="Enter your name"
-                  placeholderTextColor={COLORS.textLight}
+                  placeholderTextColor="#94A3B8"
                   autoFocus
                   maxLength={20}
-                  mode="outlined"
-                  outlineColor={COLORS.textLight}
-                  activeOutlineColor={COLORS.primary}
                 />
 
-                <PrimaryButton
-                  title="Join Room"
+                <Button
+                  variant="default"
+                  size="xl"
                   onPress={handleJoin}
                   disabled={!participantName.trim() || isJoining}
-                  variant="filled"
-                  size="large"
-                  style={[
-                    styles.joinButton,
-                    participantName.trim() && styles.joinButtonActive,
-                  ]}
-                  textStyle={{ color: COLORS.secondary }}
-                />
+                  loading={isJoining}
+                  className={cn("w-72", !participantName.trim() && "bg-muted-foreground")}
+                >
+                  Join Room
+                </Button>
               </View>
             )}
           </View>
 
           {/* Step indicator */}
-          <View style={styles.stepIndicator}>
+          <View className="flex-row justify-center gap-2 pb-8">
             <View
-              style={[
-                styles.stepDot,
-                step === 'code' && styles.stepDotActive,
-              ]}
+              className={cn(
+                "h-2 rounded-full bg-muted-foreground/30",
+                step === "code" ? "w-6 bg-primary" : "w-2"
+              )}
             />
             <View
-              style={[
-                styles.stepDot,
-                step === 'name' && styles.stepDotActive,
-              ]}
+              className={cn(
+                "h-2 rounded-full bg-muted-foreground/30",
+                step === "name" ? "w-6 bg-primary" : "w-2"
+              )}
             />
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
 
-      <LoadingOverlay
-        visible={isJoining}
-        message="Joining room..."
-      />
+      <LoadingOverlay visible={isJoining} message="Joining room..." />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.md,
-  },
-  headerTitle: {
-    fontSize: FONT_SIZES.lg,
-    fontWeight: '600',
-    color: COLORS.text,
-  },
-  headerSpacer: {
-    width: 28,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: SPACING.lg,
-  },
-  stepContainer: {
-    flex: 1,
-    alignItems: 'center',
-    paddingTop: SPACING.xxl,
-  },
-  stepTitle: {
-    fontSize: FONT_SIZES.xxl,
-    fontWeight: '600',
-    color: COLORS.text,
-    marginBottom: SPACING.sm,
-    textAlign: 'center',
-  },
-  stepDescription: {
-    fontSize: FONT_SIZES.md,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.xl,
-    textAlign: 'center',
-  },
-  codeInputWrapper: {
-    marginBottom: SPACING.xl,
-  },
-  continueButton: {
-    backgroundColor: COLORS.textLight,
-  },
-  continueButtonActive: {
-    backgroundColor: COLORS.primary,
-  },
-  codePreview: {
-    alignItems: 'center',
-    marginBottom: SPACING.xl,
-    padding: SPACING.md,
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-  },
-  codePreviewLabel: {
-    fontSize: FONT_SIZES.sm,
-    color: COLORS.textSecondary,
-    marginBottom: SPACING.xs,
-  },
-  codePreviewCode: {
-    fontSize: FONT_SIZES.xl,
-    fontWeight: 'bold',
-    color: COLORS.primary,
-    letterSpacing: 4,
-  },
-  nameInput: {
-    width: '100%',
-    maxWidth: 320,
-    fontSize: FONT_SIZES.lg,
-    backgroundColor: COLORS.surface,
-    marginBottom: SPACING.xl,
-  },
-  joinButton: {
-    backgroundColor: COLORS.textLight,
-  },
-  joinButtonActive: {
-    backgroundColor: COLORS.primary,
-  },
-  stepIndicator: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: SPACING.sm,
-    paddingBottom: SPACING.xl,
-  },
-  stepDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: COLORS.textLight,
-  },
-  stepDotActive: {
-    backgroundColor: COLORS.primary,
-    width: 24,
-  },
-});

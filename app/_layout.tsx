@@ -1,37 +1,24 @@
 /**
  * Root Layout
- * Provides app-wide configuration and theme
+ * Provides app-wide configuration with NativeWind
  */
 
-import React from 'react';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { PaperProvider, MD3LightTheme } from 'react-native-paper';
-import { COLORS } from '../src/utils/constants';
+import "../global.css";
 
-// Custom theme for react-native-paper
-const theme = {
-  ...MD3LightTheme,
-  colors: {
-    ...MD3LightTheme.colors,
-    primary: COLORS.primary,
-    secondary: COLORS.accent,
-    background: COLORS.background,
-    surface: COLORS.surface,
-    error: COLORS.error,
-  },
-};
+import React from "react";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 
 export default function RootLayout() {
   return (
-    <PaperProvider theme={theme}>
+    <>
       <StatusBar style="auto" />
       <Stack
         screenOptions={{
           headerShown: false,
-          animation: 'slide_from_right',
+          animation: "slide_from_right",
           contentStyle: {
-            backgroundColor: COLORS.background,
+            backgroundColor: "#FFFFFF",
           },
         }}
       >
@@ -42,7 +29,8 @@ export default function RootLayout() {
         <Stack.Screen name="preferences" />
         <Stack.Screen name="recommendations" />
         <Stack.Screen name="voting" />
+        <Stack.Screen name="result" />
       </Stack>
-    </PaperProvider>
+    </>
   );
 }
